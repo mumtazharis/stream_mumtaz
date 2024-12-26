@@ -33,7 +33,9 @@ class StreamHomePage extends StatefulWidget {
 class StreamHomePageState extends State<StreamHomePage> {
   Color bgColor = Colors.blueGrey;
   late ColorStream colorStream;
-
+  int lastNumber = 0;
+  late StreamController numberStreamCOntroller;
+  late NumberStream numberStream;
   // void changeColor() async {
   //   await for (var eventColor in colorStream.getColors()){
   //     setState(() {
@@ -49,20 +51,58 @@ class StreamHomePageState extends State<StreamHomePage> {
     });
   }
 
+  void addRandomNumber(){
+    Random random = Random();
+    int myNum = random.nextInt(10);
+    numberStream.addNumberToSink(myNum);
+    // numberStream.addError();
+  }
+
   @override
   void initState(){
+    // super.initState();
+    // colorStream = ColorStream();
+    // changeColor();
+    numberStream = NumberStream();
+    numberStreamCOntroller = numberStream.controller;
+    Stream stream = numberStreamCOntroller.stream;
+    stream.listen((event){
+      setState(() {
+        lastNumber = event;
+      });
+    }).onError((error){
+      setState(() {
+        lastNumber = -1;
+      });
+    });
     super.initState();
-    colorStream = ColorStream();
-    changeColor();
   }
+
+  @override
+  void dispose(){
+    numberStreamCOntroller.close();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Stream Mumtaz'),
       ),
-      body: Container(
-        decoration: BoxDecoration(color: bgColor),
+      body: SizedBox(
+        width: double.infinity,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(lastNumber.toString()),
+            ElevatedButton(
+              onPressed: () => addRandomNumber(), 
+              child: Text('New Random Number'),
+            ),
+          ],
+        ),
       )
     );
   }
